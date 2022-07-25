@@ -9,10 +9,18 @@ setwd("C:/Users/mjbur/Desktop/SHARE")
 data_r <- read_dta("sharew8_rel8-0-0_ph.dta")
 data_r <- select(data_r, mergeid, ph006d19, ph006d20)
 
-##import all csv.files from de with accelerometer data
+setwd("C:/Users/mjbur/Desktop/SHARE/sharew8_accelerometer_R/csv")
 
-data_de <- "sharew8_accelerometer_R/csv/de"
-respondents <- list.files(path = de, pattern=".csv",full.names = TRUE)
+##import all csv.files from de with accelerometer data
+data_csv <- c("be_fr", "be_nl", "cz", "de", "dk", "ef",
+              "fr", "it", "pl", "se", "si")
+
+for (d in data_csv){
+  d <- list.files(path = d, pattern = ".csv", full.names = TRUE)
+  d <- ldply(dataname, read_csv)
+}
+## Error: 'SI-015798-01' does not exist in current working directory ('C:/Users/mjbur/Desktop/SHARE/sharew8_accelerometer_R/csv').
+
 data_de <- ldply(respondents, read_csv)
 #dt <- data.table(data_de)
 #dt_slim <- dt[,list(ENMO_MEAN = mean(GGIR_ENMO)), by = c("mergeid", "measurementday")]
@@ -46,3 +54,22 @@ all_data <- merge(all_data, data_CAPI, by.x = "mergeid", by.y = "mergeid")
 
 save(all_data, file="merged_data_de.rda")
 
+## select specific variables from data
+
+variables <- c("mergeid", "GGIR_ENMO", "ph006d19", "ph006d20", "age", "female",
+               "maxgrip", "br015_", "br016_")
+datac <- all_data[variables]
+# drop the lines with maxgrip < 0
+datac <- datac[!(datac$maxgrip <= 0),]
+
+#dt_de <- data.table(datac)
+
+## merging the ENMO scores for each mergeid with the mean of all scores
+#dt_de <- (dt_de[,list(GGIR_ENMO = median(GGIR_ENMO)),
+#                by = c("mergeid", "ph006d19", "ph006d20","age", "female", 
+# "maxgrip", "br015_", "br016_")]
+#)
+
+## save selected data
+
+save(all_data, file="merged_data_de.rda")
